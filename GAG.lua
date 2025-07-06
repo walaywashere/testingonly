@@ -229,17 +229,17 @@ GiftAllBtn.MouseButton1Click:Connect(function()
 				selectedFruit = fruit
 				selectedFruitButton = nil
 				fruit.Parent = LocalPlayer.Character
-				task.wait(0.3)
-				for i = 1, 5 do
-					triggerPrompt(SelectedPlayer)
-					task.wait(0.1)
-				end
+				task.wait(0.35)
+				-- simulate hold by firing twice
+				triggerPrompt(SelectedPlayer)
+				task.wait(0.1)
+				triggerPrompt(SelectedPlayer)
 
 				-- force unequip to avoid multiple held
 				local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
 				if humanoid then humanoid:UnequipTools() end
 
-				local timeout = 2
+				local timeout = 0.3
 				while (Backpack:FindFirstChild(fruit.Name) or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(fruit.Name))) and timeout > 0 do
 					task.wait(0.05)
 					timeout -= 0.05
