@@ -184,6 +184,7 @@ function refreshFruitList()
 	FruitList:ClearAllChildren()
 	local fruits = getFruitTools()
 	for i, fruit in ipairs(fruits) do
+			if cancel or i > GIFT_LIMIT then break end
 			if i > GIFT_LIMIT then break end
 		local btn = Instance.new("TextButton")
 		btn.Size = UDim2.new(1, 0, 0, 26)
@@ -269,7 +270,7 @@ GiftAllBtn.MouseButton1Click:Connect(function()
 				selectedFruitButton = nil
 			end)
 		end
-		statusLabel.Text = cancel and "Gifting cancelled." or ("Gifted " .. tostring(#fruits) .. " fruit(s).")
+		statusLabel.Text = cancel and "Gifting cancelled." or ("Gifted " .. tostring(math.min(#fruits, GIFT_LIMIT)) .. " fruit(s).")
 		cancelButton:Destroy()
 		task.wait(1)
 		statusLabel:Destroy()
