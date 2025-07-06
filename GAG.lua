@@ -239,7 +239,7 @@ GiftAllBtn.MouseButton1Click:Connect(function()
 				task.wait(0.3)
 
 				if triggerPrompt(SelectedPlayer) then
-					local timeout = 10
+					local timeout = 5
 					while (Backpack:FindFirstChild(fruit.Name) or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(fruit.Name))) and timeout > 0 do
 						task.wait(0.5)
 						timeout -= 0.5
