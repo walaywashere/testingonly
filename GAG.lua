@@ -1,4 +1,4 @@
-getgenv().GIFT_LIMIT = getgenv().GIFT_LIMIT or 999
+local GIFT_LIMIT = getgenv().GIFT_LIMIT or 999
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
