@@ -1,3 +1,6 @@
+-- Fruit Gifting GUI with Player Selector (Improved UI v3 - Fast GiftAll)
+-- Place in LocalScript (e.g. StarterPlayerScripts)
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -5,6 +8,7 @@ local Backpack = LocalPlayer:WaitForChild("Backpack")
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+-- Create GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "FruitGiftingGUI"
 ScreenGui.ResetOnSpawn = false
@@ -77,7 +81,6 @@ end)
 local function refreshPlayerList()
 	DropdownFrame:ClearAllChildren()
 	local y = 0
-
 	for _, player in ipairs(Players:GetPlayers()) do
 		if player ~= LocalPlayer then
 			local btn = Instance.new("TextButton")
@@ -110,13 +113,11 @@ local function refreshPlayerList()
 			end)
 		end
 	end
-
 	DropdownFrame.CanvasSize = UDim2.new(0, 0, 0, y)
 end
 
 local function getFruitTools()
 	local fruits = {}
-
 	local function checkAndAdd(container)
 		for _, item in ipairs(container:GetChildren()) do
 			if item:IsA("Tool") and item:FindFirstChild("Weight") then
@@ -124,28 +125,23 @@ local function getFruitTools()
 			end
 		end
 	end
-
 	checkAndAdd(Backpack)
 	if LocalPlayer.Character then
 		checkAndAdd(LocalPlayer.Character)
 	end
-
 	return fruits
 end
 
 local function triggerPrompt(player)
 	if not player or not player.Character then return false end
-
 	local hrp = player.Character:FindFirstChild("HumanoidRootPart")
 	if not hrp or (hrp.Position - LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position).Magnitude > 10 then return false end
-
 	for _, child in ipairs(hrp:GetChildren()) do
 		if child:IsA("ProximityPrompt") and child.Enabled then
 			fireproximityprompt(child)
 			return true
 		end
 	end
-
 	return false
 end
 
@@ -172,17 +168,15 @@ local function styledButton(text, color)
 	btn.Text = text
 	btn.AutoButtonColor = true
 	btn.BorderSizePixel = 0
-
 	local corner = UICorner:Clone()
 	corner.Parent = btn
-
 	return btn
 end
 
 local RefreshBtn = styledButton("🔁 Refresh", Color3.fromRGB(90, 90, 140))
 RefreshBtn.Parent = ButtonFrame
 
-local GiftAllBtn = styledButton("🎁 Gift All", Color3.fromRGB(140, 60, 60))
+local GiftAllBtn = styledButton("🏷 Gift All", Color3.fromRGB(140, 60, 60))
 GiftAllBtn.Parent = ButtonFrame
 
 local selectedFruitButton = nil
@@ -191,7 +185,6 @@ local selectedFruit = nil
 function refreshFruitList()
 	FruitList:ClearAllChildren()
 	local fruits = getFruitTools()
-
 	for i, fruit in ipairs(fruits) do
 		local btn = Instance.new("TextButton")
 		btn.Size = UDim2.new(1, 0, 0, 26)
@@ -237,20 +230,26 @@ GiftAllBtn.MouseButton1Click:Connect(function()
 				selectedFruitButton = nil
 				fruit.Parent = LocalPlayer.Character
 				task.wait(0.3)
+				for i = 1, 5 do
+					triggerPrompt(SelectedPlayer)
+					task.wait(0.1)
+				end
 
-				if triggerPrompt(SelectedPlayer) then
-					local timeout = 5
-					while (Backpack:FindFirstChild(fruit.Name) or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(fruit.Name))) and timeout > 0 do
-						task.wait(0.5)
-						timeout -= 0.5
-					end
+				-- force unequip to avoid multiple held
+				local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+				if humanoid then humanoid:UnequipTools() end
+
+				local timeout = 2
+				while (Backpack:FindFirstChild(fruit.Name) or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(fruit.Name))) and timeout > 0 do
+					task.wait(0.05)
+					timeout -= 0.05
 				end
 
 				selectedFruit = nil
 				selectedFruitButton = nil
-				refreshFruitList()
 			end)
 		end
+		refreshFruitList()
 	end)
 end)
 
@@ -267,6 +266,8 @@ GiftSelectedBtn.MouseButton1Click:Connect(function()
 		selectedFruit.Parent = LocalPlayer.Character
 		task.wait(0.3)
 		triggerPrompt(SelectedPlayer)
+		local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		if humanoid then humanoid:UnequipTools() end
 		selectedFruit = nil
 		selectedFruitButton = nil
 		refreshFruitList()
