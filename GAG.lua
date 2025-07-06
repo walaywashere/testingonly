@@ -1,4 +1,3 @@
--- ✅ FULL SCRIPT with working GIFT_LIMIT, cancel, dropdown, gifting loop, and total fruit count
 
 local GIFT_LIMIT = _G.GIFT_LIMIT or 999
 
@@ -17,8 +16,8 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 280, 0, 440)
-MainFrame.Position = UDim2.new(0.5, -140, 0.5, -220)
+MainFrame.Size = UDim2.new(0, 280, 0, 520)
+MainFrame.Position = UDim2.new(0.5, -140, 0.5, -260)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -58,9 +57,24 @@ FruitCountLabel.Text = "Total Fruits: 0"
 FruitCountLabel.TextXAlignment = Enum.TextXAlignment.Left
 FruitCountLabel.Parent = MainFrame
 
+local GiftSelectedBtn = Instance.new("TextButton")
+GiftSelectedBtn.Size = UDim2.new(1, -20, 0, 30)
+GiftSelectedBtn.Position = UDim2.new(0, 10, 0.37, 0)
+GiftSelectedBtn.BackgroundColor3 = Color3.fromRGB(140, 100, 60)
+GiftSelectedBtn.TextColor3 = Color3.new(1, 1, 1)
+GiftSelectedBtn.Font = Enum.Font.GothamSemibold
+GiftSelectedBtn.TextSize = 14
+GiftSelectedBtn.Text = "🎁 Gift Selected"
+GiftSelectedBtn.AutoButtonColor = true
+GiftSelectedBtn.BorderSizePixel = 0
+GiftSelectedBtn.Parent = MainFrame
+
+local UICornerGift = UICorner:Clone()
+UICornerGift.Parent = GiftSelectedBtn
+
 local PlayerDropdown = Instance.new("TextButton")
 PlayerDropdown.Size = UDim2.new(1, -20, 0, 30)
-PlayerDropdown.Position = UDim2.new(0, 10, 0.36, 0)
+PlayerDropdown.Position = UDim2.new(0, 10, 0.44, 0)
 PlayerDropdown.BackgroundColor3 = Color3.fromRGB(70, 70, 120)
 PlayerDropdown.TextColor3 = Color3.new(1, 1, 1)
 PlayerDropdown.Font = Enum.Font.GothamSemibold
@@ -72,7 +86,7 @@ PlayerDropdown.Parent = MainFrame
 
 local DropdownFrame = Instance.new("ScrollingFrame")
 DropdownFrame.Size = UDim2.new(1, -20, 0, 90)
-DropdownFrame.Position = UDim2.new(0, 10, 0.44, 0)
+DropdownFrame.Position = UDim2.new(0, 10, 0.52, 0)
 DropdownFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 DropdownFrame.Visible = false
 DropdownFrame.ScrollBarThickness = 4
@@ -129,6 +143,22 @@ local function refreshPlayerList()
     DropdownFrame.CanvasSize = UDim2.new(0, 0, 0, y)
 end
 
+local selectedFruitButton = nil
+local selectedFruit = nil
+
+local function triggerPrompt(player)
+    if not player or not player.Character then return false end
+    local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp or (hrp.Position - LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position).Magnitude > 10 then return false end
+    for _, child in ipairs(hrp:GetChildren()) do
+        if child:IsA("ProximityPrompt") and child.Enabled then
+            fireproximityprompt(child)
+            return true
+        end
+    end
+    return false
+end
+
 local function getFruitTools()
     local fruits = {}
     local function checkAndAdd(container)
@@ -145,57 +175,7 @@ local function getFruitTools()
     return fruits
 end
 
-local function triggerPrompt(player)
-    if not player or not player.Character then return false end
-    local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp or (hrp.Position - LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position).Magnitude > 10 then return false end
-    for _, child in ipairs(hrp:GetChildren()) do
-        if child:IsA("ProximityPrompt") and child.Enabled then
-            fireproximityprompt(child)
-            return true
-        end
-    end
-    return false
-end
-
-local ButtonFrame = Instance.new("Frame")
-ButtonFrame.Size = UDim2.new(1, -20, 0, 30)
-ButtonFrame.Position = UDim2.new(0, 10, 0.58, 0)
-ButtonFrame.BackgroundTransparency = 1
-ButtonFrame.Parent = MainFrame
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.FillDirection = Enum.FillDirection.Horizontal
-UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-UIListLayout.Padding = UDim.new(0, 8)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Parent = ButtonFrame
-
-local function styledButton(text, color)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.5, -4, 1, 0)
-    btn.BackgroundColor3 = color
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Font = Enum.Font.GothamSemibold
-    btn.TextSize = 14
-    btn.Text = text
-    btn.AutoButtonColor = true
-    btn.BorderSizePixel = 0
-    local corner = UICorner:Clone()
-    corner.Parent = btn
-    return btn
-end
-
-local RefreshBtn = styledButton("🔁 Refresh", Color3.fromRGB(90, 90, 140))
-RefreshBtn.Parent = ButtonFrame
-
-local GiftAllBtn = styledButton("🏷 Gift All", Color3.fromRGB(140, 60, 60))
-GiftAllBtn.Parent = ButtonFrame
-
-local selectedFruitButton = nil
-local selectedFruit = nil
-
-local function refreshFruitList()
+function refreshFruitList()
     FruitList:ClearAllChildren()
     local fruits = getFruitTools()
     FruitCountLabel.Text = "Total Fruits: " .. tostring(#fruits)
@@ -214,75 +194,51 @@ local function refreshFruitList()
 
         local corner = UICorner:Clone()
         corner.Parent = btn
+
+        btn.MouseButton1Click:Connect(function()
+            if selectedFruitButton and selectedFruitButton ~= btn then
+                selectedFruitButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            end
+            if selectedFruit == fruit then
+                selectedFruit = nil
+                selectedFruitButton = nil
+                btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            else
+                selectedFruit = fruit
+                selectedFruitButton = btn
+                btn.BackgroundColor3 = Color3.fromRGB(85, 85, 85)
+            end
+        end)
     end
 end
 
-GiftAllBtn.MouseButton1Click:Connect(function()
-    if not SelectedPlayer then return end
-    local fruits = getFruitTools()
+GiftSelectedBtn.MouseButton1Click:Connect(function()
+    if not SelectedPlayer or not selectedFruit then return end
     cancel = false
 
-    local statusLabel = Instance.new("TextLabel")
-    statusLabel.Size = UDim2.new(1, -20, 0, 20)
-    statusLabel.Position = UDim2.new(0, 10, 0.87, 0)
-    statusLabel.BackgroundTransparency = 1
-    statusLabel.TextColor3 = Color3.new(1, 1, 1)
-    statusLabel.Font = Enum.Font.Gotham
-    statusLabel.TextSize = 13
-    statusLabel.Text = ""
-    statusLabel.Parent = MainFrame
+    selectedFruit.Parent = LocalPlayer.Character
+    task.wait(0.35)
+    triggerPrompt(SelectedPlayer)
+    task.wait(0.1)
+    triggerPrompt(SelectedPlayer)
 
-    local cancelButton = styledButton("✖ Cancel", Color3.fromRGB(100, 30, 30))
-    cancelButton.Size = UDim2.new(1, -20, 0, 30)
-    cancelButton.Position = UDim2.new(0, 10, 0.80, 0)
-    cancelButton.Parent = MainFrame
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then humanoid:UnequipTools() end
 
-    cancelButton.MouseButton1Click:Connect(function()
-        cancel = true
-    end)
+    local timeout = 0.3
+    while (Backpack:FindFirstChild(selectedFruit.Name) or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(selectedFruit.Name))) and timeout > 0 do
+        task.wait(0.05)
+        timeout -= 0.05
+    end
 
-    task.spawn(function()
-        local gifted = 0
-        for _, fruit in ipairs(fruits) do
-            if cancel or gifted >= GIFT_LIMIT then break end
-            statusLabel.Text = "Gifting (" .. tostring(gifted + 1) .. "/" .. tostring(math.min(#fruits, GIFT_LIMIT)) .. ")..."
-
-            pcall(function()
-                selectedFruit = fruit
-                selectedFruitButton = nil
-                fruit.Parent = LocalPlayer.Character
-                task.wait(0.35)
-                triggerPrompt(SelectedPlayer)
-                task.wait(0.1)
-                triggerPrompt(SelectedPlayer)
-
-                local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-                if humanoid then humanoid:UnequipTools() end
-
-                local timeout = 0.3
-                while (Backpack:FindFirstChild(fruit.Name) or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(fruit.Name))) and timeout > 0 do
-                    task.wait(0.05)
-                    timeout -= 0.05
-                end
-
-                selectedFruit = nil
-                selectedFruitButton = nil
-            end)
-
-            gifted += 1
-        end
-        statusLabel.Text = cancel and "Gifting cancelled." or ("Gifted " .. tostring(gifted) .. " fruit(s).")
-        cancelButton:Destroy()
-        task.wait(1)
-        statusLabel:Destroy()
-        refreshFruitList()
-    end)
+    selectedFruit = nil
+    selectedFruitButton = nil
+    refreshFruitList()
 end)
 
 Backpack.ChildAdded:Connect(refreshFruitList)
 Backpack.ChildRemoved:Connect(refreshFruitList)
 Players.PlayerAdded:Connect(refreshPlayerList)
 Players.PlayerRemoving:Connect(refreshPlayerList)
-
 refreshFruitList()
 refreshPlayerList()
