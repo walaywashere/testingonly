@@ -246,7 +246,7 @@ GiftAllBtn.MouseButton1Click:Connect(function()
 	task.spawn(function()
 		for i, fruit in ipairs(fruits) do
 			if cancel then break end
-			statusLabel.Text = "Gifting (" .. tostring(i) .. "/" .. tostring(#fruits) .. ")..."
+			statusLabel.Text = "Gifting (" .. tostring(i) .. "/" .. tostring(math.min(#fruits, GIFT_LIMIT)) .. ")..."
 
 			pcall(function()
 				selectedFruit = fruit
