@@ -1,3 +1,5 @@
+-- ✅ FULL SCRIPT with working GIFT_LIMIT and cancel
+
 local GIFT_LIMIT = _G.GIFT_LIMIT or 999
 
 local Players = game:GetService("Players")
@@ -6,6 +8,8 @@ local RunService = game:GetService("RunService")
 local Backpack = LocalPlayer:WaitForChild("Backpack")
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local cancel = false
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "FruitGiftingGUI"
@@ -184,8 +188,6 @@ function refreshFruitList()
 	FruitList:ClearAllChildren()
 	local fruits = getFruitTools()
 	for i, fruit in ipairs(fruits) do
-			if cancel or i > GIFT_LIMIT then break end
-			if i > GIFT_LIMIT then break end
 		local btn = Instance.new("TextButton")
 		btn.Size = UDim2.new(1, 0, 0, 26)
 		btn.Position = UDim2.new(0, 0, 0, (i - 1) * 28)
@@ -205,7 +207,6 @@ function refreshFruitList()
 			if selectedFruitButton and selectedFruitButton ~= btn then
 				selectedFruitButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 			end
-
 			if selectedFruit == fruit then
 				selectedFruit = nil
 				selectedFruitButton = nil
@@ -222,7 +223,7 @@ end
 GiftAllBtn.MouseButton1Click:Connect(function()
 	if not SelectedPlayer then return end
 	local fruits = getFruitTools()
-	local cancel = false
+	cancel = false
 
 	local statusLabel = Instance.new("TextLabel")
 	statusLabel.Size = UDim2.new(1, -20, 0, 20)
@@ -244,9 +245,10 @@ GiftAllBtn.MouseButton1Click:Connect(function()
 	end)
 
 	task.spawn(function()
-		for i, fruit in ipairs(fruits) do
-			if cancel then break end
-			statusLabel.Text = "Gifting (" .. tostring(i) .. "/" .. tostring(#fruits) .. ")..."
+		local gifted = 0
+		for _, fruit in ipairs(fruits) do
+			if cancel or gifted >= GIFT_LIMIT then break end
+			statusLabel.Text = "Gifting (" .. tostring(gifted + 1) .. "/" .. tostring(math.min(#fruits, GIFT_LIMIT)) .. ")..."
 
 			pcall(function()
 				selectedFruit = fruit
@@ -269,34 +271,15 @@ GiftAllBtn.MouseButton1Click:Connect(function()
 				selectedFruit = nil
 				selectedFruitButton = nil
 			end)
+
+			gifted += 1
 		end
-		statusLabel.Text = cancel and "Gifting cancelled." or ("Gifted " .. tostring(math.min(#fruits, GIFT_LIMIT)) .. " fruit(s).")
+		statusLabel.Text = cancel and "Gifting cancelled." or ("Gifted " .. tostring(gifted) .. " fruit(s).")
 		cancelButton:Destroy()
 		task.wait(1)
 		statusLabel:Destroy()
 		refreshFruitList()
 	end)
-end)
-
-local GiftSelectedBtn = styledButton("🎯 Gift Selected", Color3.fromRGB(60, 120, 60))
-GiftSelectedBtn.Size = UDim2.new(1, -20, 0, 30)
-GiftSelectedBtn.Position = UDim2.new(0, 10, 0.73, 0)
-GiftSelectedBtn.Parent = MainFrame
-
-local UICorner4 = UICorner:Clone()
-UICorner4.Parent = GiftSelectedBtn
-
-GiftSelectedBtn.MouseButton1Click:Connect(function()
-	if selectedFruit and SelectedPlayer then
-		selectedFruit.Parent = LocalPlayer.Character
-		task.wait(0.3)
-		triggerPrompt(SelectedPlayer)
-		local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-		if humanoid then humanoid:UnequipTools() end
-		selectedFruit = nil
-		selectedFruitButton = nil
-		refreshFruitList()
-	end
 end)
 
 Backpack.ChildAdded:Connect(refreshFruitList)
